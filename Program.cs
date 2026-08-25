@@ -21,5 +21,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapCategoryEndpoints();
+app.MapProductsEndpoints();
 
 app.Run();

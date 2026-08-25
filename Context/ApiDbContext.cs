@@ -14,6 +14,7 @@ namespace CatalogApiMinimalApi.Context
             // Category
             modelBuilder.Entity<Category>().ToTable("categories");
             modelBuilder.Entity<Category>().HasKey(c => c.Id);
+            modelBuilder.Entity<Category>().Property(c => c.Id).ValueGeneratedNever();
             modelBuilder.Entity<Category>().Property(c => c.Name)
                                            .HasMaxLength(100)
                                            .IsRequired();

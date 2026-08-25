@@ -25,7 +25,6 @@ namespace CatalogApiMinimalApi.Migrations
             modelBuilder.Entity("CatalogApiMinimalApi.Domains.Category", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
                     b.Property<string>("Description")

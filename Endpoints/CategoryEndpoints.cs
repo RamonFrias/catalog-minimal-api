@@ -11,34 +11,36 @@ namespace CatalogApiMinimalApi.Endpoints
             app.MapGet("/get-all-categories", async (ApiDbContext context, CancellationToken ct = default) =>
             {
                 var categories = await context.Categories.ToListAsync(ct);
-                Results.Ok(categories);
+                return Results.Ok(categories);
             });
 
-            app.MapGet("/get-categorie-by-id/{id:int}", async (int id, ApiDbContext context, CancellationToken ct = default) => 
+            app.MapGet("/get-category-by-id/{id:Guid}", async (Guid id, ApiDbContext context, CancellationToken ct = default) => 
                         await context.Categories.FindAsync(id) is Category category ? Results.Ok(category) : Results.NotFound("Category not found."));
 
             app.MapPost("/create-category", async (Category category, ApiDbContext context, CancellationToken ct = default) =>
             {
                 var result = await context.Categories.AddAsync(category, ct);
-                Results.CreatedAtRoute("/get-category-by-id/{id}", category);
+                await context.SaveChangesAsync(ct);
+                return Results.Created("/get-category-by-id/{id}", category);
             });
 
-            app.MapPut("/update-category-by-id/{id:Guid}", async (Guid id, Category category, ApiDbContext context, CancellationToken ct = default) =>
+            app.MapPut("/update-category-by-id/{id:guid}", async (Guid id, Category category, ApiDbContext context, CancellationToken ct = default) =>
             {
-                if(id == category.Id)
-                {
-                    if (await context.Categories.FindAsync(id, ct) is not null)
-                    {
-                        context.Categories.Update(category);
-                        await context.SaveChangesAsync(ct);
-                        return Results.NoContent();
-                    }
+                if (id != category.Id)
+                    return Results.BadRequest("Informed id is different from category id.");
+
+                var existing = await context.Categories.FindAsync(new object?[] { id }, ct);
+                if (existing is null)
                     return Results.NotFound("Category not found.");
-                }
-                return Results.BadRequest("Informed id is diferent of category id.");
+
+                existing.Name = category.Name;
+                existing.Description = category.Description;
+
+                await context.SaveChangesAsync(ct);
+                return Results.NoContent();
             });
 
-            app.MapDelete("/delete-category-by-id", async (Guid id, ApiDbContext context, CancellationToken ct = default) =>
+            app.MapDelete("/delete-category-by-id/{id:Guid}", async (Guid id, ApiDbContext context, CancellationToken ct = default) =>
             {
                 if(await context.Categories.FindAsync(id) is Category category)
                 {
